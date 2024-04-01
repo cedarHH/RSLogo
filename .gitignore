@@ -1,5 +1,6 @@
 mark_request.txt
 *.tmp
 *.log
-target/
 Cargo.lock
+target/
+rslogo_doc/
