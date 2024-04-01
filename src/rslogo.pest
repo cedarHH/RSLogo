@@ -1,0 +1,52 @@
+// Define the beginning and end of the document
+file = _{SOI ~ (statement | comment_line| NEWLINE)* ~ EOI}
+
+// Statements and comment lines
+statement = _{ (control | declaration | invocation | block) ~ NEWLINE}
+comment_line = _{ "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+
+// Types of statements
+control = _{control_unary|control_float|control_int}
+declaration = _{make|addassign}
+invocation = {(!"IF"~!"WHILE"~!"TO"~!"END"~macro_name) ~ expression*}
+block = _{condition | loop_lg | macro_lg}
+
+// logo command
+control_unary = { "PENUP" | "PENDOWN" }
+control_float = { ("FORWARD" | "BACK" | "LEFT" | "RIGHT" | "SETX" | "SETY") ~ expression }
+control_int = { ("TURN" | "SETHEADING" | "SETPENCOLOR") ~ expression }
+
+// Assignment of variables
+make = { "MAKE" ~ variable_declaration ~ expression }
+addassign = {"ADDASSIGN" ~ variable_declaration ~ expression }
+
+// Variables Values and Strings
+value = @{ "\""~"-"? ~ number |"\"TRUE"|"\"FALSE"}
+variable = @{ ":" ~ string}
+variable_declaration= @{ "\"" ~ string}
+queries = {"XCOR"|"YCOR"|"HEADING"|"COLOR"}
+number = _{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+macro_name = {string}
+string = _{ (ASCII_ALPHANUMERIC | "_")+ }
+
+// control flow
+condition = {"IF" ~ expression ~ segment}
+loop_lg = {"WHILE" ~ expression ~ segment}
+macro_lg = {"TO" ~ macro_name ~ parameter_list ~ macro_segment ~ "END"}
+
+// expression
+expression = {
+  (operator ~ expression ~ expression) |
+  value |
+  variable|
+  queries
+}
+operator = { "GT" | "LT" | "EQ" | "NE" | "AND" | "OR" | "+" | "-" | "*" | "/" }
+
+segment = {"[\n" ~ (statement|NEWLINE)* ~ "]"}
+macro_segment = {(statement|NEWLINE)+}
+parameter_list = {variable_declaration*}
+
+// Spaces and newlines
+WHITESPACE = _{ " " | "\t" }
+NEWLINE = _{ "\r\n" | "\n" }
